@@ -8,27 +8,22 @@ app = Flask(__name__)
 
 # Database path
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # SocketIO
 socketio = SocketIO(app)
 
 
-class Room(db.Model):
+class Rooms(db.Model):
     room_id = db.Column(db.Integer, primary_key=True)
     online_users = db.Column(db.String)
 
 
-def uniq_table(tablename):
-    class RoomHistory(db.Model):
-        __tablename__ = tablename
-        id = db.Column(db.Integer, primary_key=True)
-        user = db.Column(db.String)
-        message = db.Column(db.String)
-        date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now())
-
-    RoomHistory.__table__.create(db.session.bind)
-    return RoomHistory
+def create_table(tablename):
+    tabl_obj = connect_to(tablename).__table__.create(db.session.bind)
+    print(f'Table {tablename} created')
+    return tabl_obj
 
 
 def connect_to(tablename):
@@ -39,12 +34,11 @@ def connect_to(tablename):
         message = db.Column(db.String)
         date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now())
 
+    print(f'Class to {tablename} was created as object')
     return RoomHistory
 
 
-o = connect_to('ROOM123')(user='ok', message='NONOE')
-db.session.add(o)
-db.session.commit()
+o = create_table('room123456789')
 
 
 @socketio.on('message')
