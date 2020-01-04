@@ -3,8 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Room selector</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+
 </head>
 <body>
+<label>
+    <span>Username:</span>
+    <input class="username">
+</label>
+<p></p>
+<label>
+    <span>Room:</span>
+    <input class="room">
+</label>
+<button class="submbtn">Connect</button>
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function () {
+        let socket = io();
+        socket.on('connect', function () {
+            socket.emit('json', {data: 'I\'m connected!'});
+        });
 
+        socket.on('RoomDoesNotExist', function () {
+            if (!$('.not_exist').length) {
+                $('body').append('<p class="not_exist">Room does not exist</p>')
+            }
+        });
+
+        $('.submbtn').click(function () {
+            socket.emit('room_connect', {'username': $('.username').val(), 'room': $('.room').val()})
+        })
+
+    })
+</script>
 </body>
 </html>

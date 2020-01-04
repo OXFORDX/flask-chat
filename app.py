@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 import datetime
-
+import json
+import telebot
 app = Flask(__name__)
 
 # Database path
@@ -29,7 +30,7 @@ def create_table(tablename):
 def connect_to(tablename):
     class RoomHistory(db.Model):
         __tablename__ = tablename
-        id = db.Column(db.Integer, primary_key=True)
+        message_id = db.Column(db.Integer, primary_key=True)
         user = db.Column(db.String)
         message = db.Column(db.String)
         date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now())
@@ -38,17 +39,24 @@ def connect_to(tablename):
     return RoomHistory
 
 
-o = create_table('room123456789')
-
-
-@socketio.on('message')
+@socketio.on('json')
 def handle_message(message):
-    print('received message: ' + message)
+    print(message)
+
+
+@socketio.on('room_connect')
+def connection(message):
+    username = message['username']
+    room_id = message['room']
+    if f'room{room_id}' in db.engine.table_names():
+        table_obj = connect_to(f'room{room_id}')
+    else:
+        socketio.emit('RoomDoesNotExist')
 
 
 @app.route('/')
 def hello_world():
-    return 'Hello World!'
+    return render_template('room_selector.html')
 
 
 if __name__ == '__main__':
