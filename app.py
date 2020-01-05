@@ -1,10 +1,9 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, session
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 import datetime
 import json
-import telebot
 
 app = Flask(__name__)
 
@@ -12,6 +11,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+Session(app)
 
 # SocketIO
 socketio = SocketIO(app)
@@ -46,23 +46,32 @@ def hello_world():
     return render_template('room_selector.html')
 
 
-@app.route('/room')
-def room():
-    return render_template('room.html')
+@app.route('/room/<int:roomid>/')
+def room(roomid):
+    table_obj = connect_to(f'room{roomid}')
+    for i in table_obj.query.all():
+        print(i.message)
+    return render_template('room.html', roomid=roomid)
 
 
-@socketio.on('json')
-def handle_message(message):
-    print(message)
+@socketio.on('message_send')
+def handle_message(data):
+    print(data)
+    table_obj = connect_to(f'room{data["room_id"]}')
+    username = 'Volodya'
+    message_obj = table_obj(user=username, message=data['message'])
+    db.session.add(message_obj)
+    db.session.commit()
 
 
 @socketio.on('room_connect')
 def connection(message):
-    username = message['username']
+    session['username'] = message['username']
     room_id = message['room']
+    session['roomid'] = room_id
     if f'room{room_id}' in db.engine.table_names():
         table_obj = connect_to(f'room{room_id}')
-        return socketio.emit('redirect', {'url': url_for('room')})
+        return socketio.emit('redirect', {'url': f'room/{room_id}', 'room_id': room_id})
     else:
         socketio.emit('RoomDoesNotExist')
 
