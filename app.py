@@ -1,10 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 import datetime
 import json
 import telebot
+
 app = Flask(__name__)
 
 # Database path
@@ -30,6 +31,7 @@ def create_table(tablename):
 def connect_to(tablename):
     class RoomHistory(db.Model):
         __tablename__ = tablename
+        __table_args__ = {'extend_existing': True}
         message_id = db.Column(db.Integer, primary_key=True)
         user = db.Column(db.String)
         message = db.Column(db.String)
@@ -37,6 +39,16 @@ def connect_to(tablename):
 
     print(f'Class to {tablename} was created as object')
     return RoomHistory
+
+
+@app.route('/')
+def hello_world():
+    return render_template('room_selector.html')
+
+
+@app.route('/room')
+def room():
+    return render_template('room.html')
 
 
 @socketio.on('json')
@@ -50,13 +62,9 @@ def connection(message):
     room_id = message['room']
     if f'room{room_id}' in db.engine.table_names():
         table_obj = connect_to(f'room{room_id}')
+        return socketio.emit('redirect', {'url': url_for('room')})
     else:
         socketio.emit('RoomDoesNotExist')
-
-
-@app.route('/')
-def hello_world():
-    return render_template('room_selector.html')
 
 
 if __name__ == '__main__':

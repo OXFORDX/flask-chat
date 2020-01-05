@@ -33,7 +33,12 @@
 
         $('.submbtn').click(function () {
             socket.emit('room_connect', {'username': $('.username').val(), 'room': $('.room').val()})
-        })
+        });
+
+        socket.on('redirect', function (data) {
+            console.log(data.url);
+            window.location = data.url;
+        });
 
     })
 </script>
