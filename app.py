@@ -11,8 +11,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+SESSION_TYPE = 'redis'
 Session(app)
-
 # SocketIO
 socketio = SocketIO(app)
 
@@ -48,27 +48,24 @@ def hello_world():
 
 @app.route('/room/<int:roomid>/')
 def room(roomid):
-    table_obj = connect_to(f'room{roomid}')
-    for i in table_obj.query.all():
-        print(i.message)
-    return render_template('room.html', roomid=roomid)
+    table_obj = connect_to(f'room{roomid}').query.all()
+    return render_template('room.html', roomid=roomid, table=table_obj)
 
 
 @socketio.on('message_send')
 def handle_message(data):
-    print(data)
     table_obj = connect_to(f'room{data["room_id"]}')
-    username = 'Volodya'
+    username = data['username']
     message_obj = table_obj(user=username, message=data['message'])
+    print(f'====\nUser: {message_obj.user}\n'
+          f'Message: {message_obj.message}\n====')
     db.session.add(message_obj)
     db.session.commit()
 
 
 @socketio.on('room_connect')
 def connection(message):
-    session['username'] = message['username']
     room_id = message['room']
-    session['roomid'] = room_id
     if f'room{room_id}' in db.engine.table_names():
         table_obj = connect_to(f'room{room_id}')
         return socketio.emit('redirect', {'url': f'room/{room_id}', 'room_id': room_id})

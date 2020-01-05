@@ -12,7 +12,7 @@
 <body>
 <div class="container">
     <div class="row">
-        <div class="col-md-5">
+        <div class="col-md-9">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <span class="glyphicon glyphicon-comment"></span> Chat <span class="room_id">{{ roomid }}</span>
@@ -35,68 +35,39 @@
                         </ul>
                     </div>
                 </div>
+
                 <div class="panel-body">
                     <ul class="chat">
-                        <li class="left clearfix"><span class="chat-img pull-left">
-                            <img src="http://placehold.it/50/55C1E7/fff&text=U" alt="User Avatar" class="img-circle"/>
+                        {% for i in table %}
+                            <li class="right clearfix"><span class="chat-img pull-right">
+                            <img src="http://placehold.it/50/FA6F57/fff&text=V" alt="User Avatar" class="img-circle"/>
                         </span>
-                            <div class="chat-body clearfix">
-                                <div class="header">
-                                    <strong class="primary-font">Jack Sparrow</strong> <small
-                                        class="pull-right text-muted">
-                                    <span class="glyphicon glyphicon-time"></span>12 mins ago</small>
+                                <div class="chat-body clearfix">
+                                    <div class="header">
+                                        <small class=" text-muted"><span
+                                                class="glyphicon glyphicon-time"></span>{{ i.date }}</small>
+                                        <strong class="pull-right primary-font">{{ i.user }}</strong>
+                                    </div>
+                                    <p>{{ i.message }}</p>
                                 </div>
-                                <p>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
-                                    dolor, quis ullamcorper ligula sodales.
-                                </p>
-                            </div>
-                        </li>
-                        <li class="right clearfix"><span class="chat-img pull-right">
-                            <img src="http://placehold.it/50/FA6F57/fff&text=ME" alt="User Avatar" class="img-circle"/>
-                        </span>
-                            <div class="chat-body clearfix">
-                                <div class="header">
-                                    <small class=" text-muted"><span class="glyphicon glyphicon-time"></span>13 mins
-                                        ago</small>
-                                    <strong class="pull-right primary-font">Bhaumik Patel</strong>
-                                </div>
-                                <p>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
-                                    dolor, quis ullamcorper ligula sodales.
-                                </p>
-                            </div>
-                        </li>
-                        <li class="left clearfix"><span class="chat-img pull-left">
-                            <img src="http://placehold.it/50/55C1E7/fff&text=U" alt="User Avatar" class="img-circle"/>
-                        </span>
-                            <div class="chat-body clearfix">
-                                <div class="header">
-                                    <strong class="primary-font">Jack Sparrow</strong> <small
-                                        class="pull-right text-muted">
-                                    <span class="glyphicon glyphicon-time"></span>14 mins ago</small>
-                                </div>
-                                <p>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
-                                    dolor, quis ullamcorper ligula sodales.
-                                </p>
-                            </div>
-                        </li>
-                        <li class="right clearfix"><span class="chat-img pull-right">
-                            <img src="http://placehold.it/50/FA6F57/fff&text=ME" alt="User Avatar" class="img-circle"/>
-                        </span>
-                            <div class="chat-body clearfix">
-                                <div class="header">
-                                    <small class=" text-muted"><span class="glyphicon glyphicon-time"></span>15 mins
-                                        ago</small>
-                                    <strong class="pull-right primary-font">Bhaumik Patel</strong>
-                                </div>
-                                <p>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
-                                    dolor, quis ullamcorper ligula sodales.
-                                </p>
-                            </div>
-                        </li>
+                            </li>
+                        {% endfor %}
+
+                        {#                        <li class="left clearfix"><span class="chat-img pull-left">#}
+                        {#                            <img src="http://placehold.it/50/55C1E7/fff&text=U" alt="User Avatar" class="img-circle"/>#}
+                        {#                        </span>#}
+                        {#                            <div class="chat-body clearfix">#}
+                        {#                                <div class="header">#}
+                        {#                                    <strong class="primary-font">Jack Sparrow</strong> <small#}
+                        {#                                        class="pull-right text-muted">#}
+                        {#                                    <span class="glyphicon glyphicon-time"></span>14 mins ago</small>#}
+                        {#                                </div>#}
+                        {#                                <p>#}
+                        {#                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare#}
+                        {#                                    dolor, quis ullamcorper ligula sodales.#}
+                        {#                                </p>#}
+                        {#                            </div>#}
+                        {#                        </li>#}
                     </ul>
                 </div>
                 <div class="panel-footer">
@@ -116,9 +87,33 @@
 <script>
     $(document).ready(function () {
         let socket = io();
+        socket.on('connect', function () {
+            console.log(sessionStorage.getItem('username'), sessionStorage.getItem('room'))
+        });
+
         $('#btn-chat').click(function () {
-            socket.emit('message_send', {'message': $('#btn-input').val(), 'room_id': $('.room_id').text()})
-        })
+            let message = $('#btn-input').val();
+            let username = sessionStorage.getItem('username');
+            socket.emit('message_send', {
+                'message': message,
+                'room_id': $('.room_id').text(),
+                'username': username
+            });
+            $('.chat').append(`                            <li class="right clearfix"><span class="chat-img pull-right">
+                            <img src="http://placehold.it/50/FA6F57/fff&text=V" alt="User Avatar" class="img-circle"/>
+                        </span>
+                                <div class="chat-body clearfix">
+                                    <div class="header">
+                                        <small class=" text-muted"><span class="glyphicon glyphicon-time"></span></small>
+                                        <strong class="pull-right primary-font">${username}</strong>
+                                    </div>
+                                    <p>${message}</p>
+                                </div>
+                            </li>`);
+            $("#btn-input").val('');
+            $('.chat').animate({scrollTop: $('.chat').height()}, 'slow');
+        });
+
     })
 </script>
 </body>

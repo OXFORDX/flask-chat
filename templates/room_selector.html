@@ -32,7 +32,11 @@
         });
 
         $('.submbtn').click(function () {
-            socket.emit('room_connect', {'username': $('.username').val(), 'room': $('.room').val()})
+            let username = $('.username').val();
+            let room = $('.room').val();
+            sessionStorage.setItem('username', username);
+            sessionStorage.setItem('room', room);
+            socket.emit('room_connect', {'username': username, 'room': room})
         });
 
         socket.on('redirect', function (data) {
