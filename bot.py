@@ -14,6 +14,7 @@ def start(message):
 @bot.message_handler(content_types=['text'])
 def message(message):
     if message.text == 'Generate room':
+        print(message.chat.id)
         rand_id = random.randint(1000, 10000)
         if f'room{rand_id}' not in db.engine.table_names():
             create_table(f'room{rand_id}')

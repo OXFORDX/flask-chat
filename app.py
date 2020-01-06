@@ -4,6 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 import datetime
 import json
+import telebot
+
+
+bot = telebot.TeleBot('1035683242:AAG_atEniKoa39BNoH5lweHZ1S3vS5zz2Rs')
 
 app = Flask(__name__)
 
@@ -11,8 +15,6 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-SESSION_TYPE = 'redis'
-Session(app)
 # SocketIO
 socketio = SocketIO(app)
 
@@ -59,6 +61,10 @@ def handle_message(data):
     message_obj = table_obj(user=username, message=data['message'])
     print(f'====\nUser: {message_obj.user}\n'
           f'Message: {message_obj.message}\n====')
+    bot.send_message(370091393, f'====\nRoom: room{data["room_id"]}\n'
+                                f'User: {message_obj.user}\n'
+                                f'Message: {message_obj.message}\n'
+                                f'Date: {datetime.datetime.now()}\n====')
     db.session.add(message_obj)
     db.session.commit()
 
