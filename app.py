@@ -61,10 +61,7 @@ def handle_message(data):
     message_obj = table_obj(user=username, message=data['message'])
     print(f'====\nUser: {message_obj.user}\n'
           f'Message: {message_obj.message}\n====')
-    bot.send_message(370091393, f'====\nRoom: room{data["room_id"]}\n'
-                                f'User: {message_obj.user}\n'
-                                f'Message: {message_obj.message}\n'
-                                f'Date: {datetime.datetime.now()}\n====')
+    bot.send_message(370091393, f'*{message_obj.user}*\n{message_obj.message}', parse_mode="Markdown")
     db.session.add(message_obj)
     db.session.commit()
 

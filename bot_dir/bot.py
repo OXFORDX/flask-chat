@@ -2,7 +2,8 @@ import telebot
 from telebot import types
 import random
 from app import db, create_table
-
+from sqlalchemy import create_engine
+engine = create_table('sqlite:///bot.sqlite3')
 bot = telebot.TeleBot('1035683242:AAG_atEniKoa39BNoH5lweHZ1S3vS5zz2Rs')
 
 
@@ -13,6 +14,7 @@ def start(message):
 
 @bot.message_handler(content_types=['text'])
 def message(message):
+    print(bot.get_chat(message.chat.id))
     if message.text == 'Generate room':
         print(message.chat.id)
         rand_id = random.randint(1000, 10000)
@@ -28,6 +30,8 @@ def keyboard():
     rand = types.KeyboardButton('Generate room')
     some.add(rand)
     return some
+
+
 
 
 bot.polling()

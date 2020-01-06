@@ -87,17 +87,31 @@
 <script>
     $(document).ready(function () {
         function mess_append(side, datetime, username, message) {
-            let append_string = `<li class="right clearfix"><span class="chat-img pull-right">
+            if (side === 'right') {
+                return `<li class="right clearfix"><span class="chat-img pull-right">
                             <img src="http://placehold.it/50/FA6F57/fff&text=V" alt="User Avatar" class="img-circle"/>
                         </span>
                                 <div class="chat-body clearfix">
                                     <div class="header">
-                                        <small class=" text-muted"><span class="glyphicon glyphicon-time">${datetime}</span></small>
+                                        <small class="text-muted"><span class="glyphicon glyphicon-time">${datetime}</span></small>
                                         <strong class="pull-right primary-font">${username}</strong>
                                     </div>
                                     <p>${message}</p>
                                 </div>
-                            </li>`
+                            </li>`;
+            } else {
+                return `<li class="left clearfix"><span class="chat-img pull-left">
+                            <img src="http://placehold.it/50/FA6F57/fff&text=V" alt="User Avatar" class="img-circle"/>
+                        </span>
+                                <div class="chat-body clearfix">
+                                    <div class="header">
+                                        <strong class="primary-font">${username}</strong>
+                                        <small class="pull-right text-muted"><span class="glyphicon glyphicon-time">${datetime}</span></small>
+                                    </div>
+                                    <p>${message}</p>
+                                </div>
+                            </li>`;
+            }
         }
 
         let socket = io();
@@ -109,7 +123,7 @@
             let message = $('#btn-input').val();
             let username = sessionStorage.getItem('username');
             let currentdate = new Date();
-            let datetime = "Last Sync: " + currentdate.getDate() + "/"
+            let datetime = currentdate.getDate() + "/"
                 + (currentdate.getMonth() + 1) + "/"
                 + currentdate.getFullYear() + " @ "
                 + currentdate.getHours() + ":"
@@ -120,17 +134,7 @@
                 'room_id': $('.room_id').text(),
                 'username': username
             });
-            $('.chat').append(`                            <li class="right clearfix"><span class="chat-img pull-right">
-                            <img src="http://placehold.it/50/FA6F57/fff&text=V" alt="User Avatar" class="img-circle"/>
-                        </span>
-                                <div class="chat-body clearfix">
-                                    <div class="header">
-                                        <small class=" text-muted"><span class="glyphicon glyphicon-time">${datetime}</span></small>
-                                        <strong class="pull-right primary-font">${username}</strong>
-                                    </div>
-                                    <p>${message}</p>
-                                </div>
-                            </li>`);
+            $('.chat').append(mess_append('right', datetime, username, message));
             $("#btn-input").val('');
         });
 
