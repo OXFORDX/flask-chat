@@ -7,6 +7,9 @@ import datetime
 base = declarative_base()
 metadata = MetaData()
 engine = create_engine('sqlite:///bot_dir/bot.sqlite3')
+Session = sessionmaker()
+Session.configure(bind=engine)
+session = Session()
 
 
 class RoomHistory(base):
@@ -21,7 +24,12 @@ class RoomHistory(base):
 class Users(base):
     __tablename__ = 'users'
     __table_args__ = {'extend_existing': True}
-    
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    active_room = Column(Integer)
+    rooms_quantity = Column(String)
+    buffer_start = Column(Integer)
+    buffer_end = Column(Integer)
 
 
 def create_table(tablename):
@@ -41,3 +49,6 @@ def connect_to(tablename):
 
     print(f'Class to {tablename} was created as object')
     return RoomHistory
+
+
+base.metadata.create_all(engine)
