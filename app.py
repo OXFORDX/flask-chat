@@ -5,7 +5,7 @@ from flask_session import Session
 import datetime
 import json
 import telebot
-
+from bot_dir.models import bot_connect_to, session, Users
 
 bot = telebot.TeleBot('1035683242:AAG_atEniKoa39BNoH5lweHZ1S3vS5zz2Rs')
 
@@ -56,12 +56,18 @@ def room(roomid):
 
 @socketio.on('message_send')
 def handle_message(data):
-    table_obj = connect_to(f'room{data["room_id"]}')
     username = data['username']
+    print(username)
+    bot_user_obj = session.query(Users).filter_by(username=username).one()
+    print(bot_user_obj)
+    bot_table_obj = bot_connect_to(f'room{data["room_id"]}')
+    table_obj = connect_to(f'room{data["room_id"]}')
     message_obj = table_obj(user=username, message=data['message'])
     print(f'====\nUser: {message_obj.user}\n'
           f'Message: {message_obj.message}\n====')
-    bot.send_message(370091393, f'*{message_obj.user}*\n{message_obj.message}', parse_mode="Markdown")
+    print(data['room_id'], bot_user_obj.active_room)
+    if data['room_id'] == bot_user_obj.active_room:
+        bot.send_message(370091393, f'*{message_obj.user}*\n{message_obj.message}', parse_mode="Markdown")
     db.session.add(message_obj)
     db.session.commit()
 
@@ -70,7 +76,6 @@ def handle_message(data):
 def connection(message):
     room_id = message['room']
     if f'room{room_id}' in db.engine.table_names():
-        table_obj = connect_to(f'room{room_id}')
         return socketio.emit('redirect', {'url': f'room/{room_id}', 'room_id': room_id})
     else:
         socketio.emit('RoomDoesNotExist')
