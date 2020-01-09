@@ -32,8 +32,14 @@ def message(message):
         if message.text == 'Disconnect':
             room = user_obj.active_room
             user_obj.active_room = None
+            for i in range(user_obj.buffer_start, user_obj.buffer_end + 1):
+                print(i)
+                bot.delete_message(message.chat.id, i)
             bot.send_message(message.chat.id, f'Disconnected from room{room}', reply_markup=keyboard_start())
         else:
+            if not user_obj.buffer_start:
+                user_obj.buffer_start = message.message_id
+            user_obj.buffer_end = message.message_id
             room_obj = connect_to(f'room{user_obj.active_room}')
             x = room_obj(user=message.chat.username, message=message.text)
             session.add(x)
